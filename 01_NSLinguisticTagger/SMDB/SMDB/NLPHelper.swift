@@ -52,7 +52,21 @@ func getSearchTerms(text: String, block: (String) -> Void) {
 }
 
 func getPeopleNames(text: String, block: (String) -> Void) {
-  //To be replaced
+  let tagger = NSLinguisticTagger(tagSchemes: [.nameType], options: 0)
+  tagger.string = text
+  
+  let options: NSLinguisticTagger.Options = [.omitWhitespace,
+                                             .omitOther,
+                                             .omitPunctuation,
+                                             .joinNames]
+  let range = NSRange(text.startIndex..., in: text)
+  
+  tagger.enumerateTags(in: range, unit: .word, scheme: .nameType, options: options) { (tag, tokenRange, _) in
+    guard let tag = tag, tag == .personalName else { return }
+    
+    let token = Range(tokenRange, in: text)!
+    block(String(text[token]))
+  }
 }
 
 func predictSentiment(text: String) -> Int? {
